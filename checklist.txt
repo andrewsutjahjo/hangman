@@ -9,15 +9,15 @@ Game itself:
 
     start_game:
         check session:
-        - read list of words (from word reader for extensibility)
-        - save as set of letters in session
-        - guessed letters
-        - return length of _
+        v read list of words (from word reader for extensibility)
+        v save as set of letters in session
+        v guessed letters
+        v return length of _
 
     guess_letter:
-        - check session:
-        - check for ascii
-        - if letter !in set(guessed_letters)
+        v check session:
+        v check for ascii
+        v if letter !in set(guessed_letters)
             if letter in set(word_to_guess)
                 return __ with filled in letters
             else
@@ -26,12 +26,12 @@ Game itself:
                     Game over dude
                     continue, save or reset?
                 return
-        - return '''You've already guessed this letter. I'd use your guess for another letter'''
+        v return '''You've already guessed this letter. I'd use your guess for another letter'''
 
     save_highscore:
-        - get session
-        - save highscore (to file)
-        - reset session
+        v get session
+        v save highscore (to file)
+        v reset session
 
 Client:
     gets dict from API
@@ -40,14 +40,14 @@ Client:
     print _ with letters filled in.
 
 unittest:
-    should start a session
+    v should start a session
 
-    should start a game with a user_id
+    v should start a game with a user_id
 
-    should return a reponse
-    should return '''Non ascii response'''
-    should return  '''guess another letter''' if letter in set of words
-    should update the session correctly
+    v should return a reponse
+    v should return '''Non ascii response'''
+    v should return  '''guess another letter''' if letter in set of words
+    v should update the session correctly
         - when a letter is guessed correctly
             - and update the word
             - and update the guessed_letters
@@ -59,7 +59,10 @@ unittest:
             - and update the word state
             - and update the attempts remaining
 
-    should reset a session when a high score is saved
+    v should handle a loss correctly
+    v should handle a win correctly
+        - and add extra points when it's a complete guess
+    v should reset a session and save when a high score is saved
 
 State:
     - use Flask session
@@ -74,5 +77,5 @@ State:
 
 pluspoints?
     - dockerize API and client
-    - if len(guess) == len(word_in_session) check if completely correct
-    - add username question at start: and save
+    v if len(guess) == len(word_in_session) check if completely correct
+    v add username question at start: and save

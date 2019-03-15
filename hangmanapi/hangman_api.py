@@ -39,13 +39,16 @@ api = Api(app)
 app.secret_key = '3d_hubs'
 app.config['SESSION_TYPE'] = 'filesystem'
 
+
 class ContextAdapter(logging.LoggerAdapter):
     def process(self, msg, kwargs):
         return ("{0} {1}".format(self.extra['context'], msg), kwargs)
 
+
 class HealthCheck(Resource):
     def get(self):
         return True
+
 
 class StartSession(Resource):
     """Initializes a new session with a user. returns user_id and score"""
@@ -75,12 +78,14 @@ class StartNewGame(Resource):
         user_id = session.get('user_id', None)
         if not user_id:
             return {'user_id': None}
+        score = session.get('score', 0)
 
         word_to_guess = self.get_new_word()
 
         session['attempts_remaining'] = 5
         session['word_to_guess'] = word_to_guess
         session['guessed_letters'] = []
+        session['score'] = score
         session['word_state'] = utils.create_word_state(word_to_guess, [])
         main_logger.debug(session)
         return utils.create_json_return(session, 'Ready to play?')
@@ -103,10 +108,10 @@ class GuessLetter(Resource):
 
     """Lets user guess if a letter is in the word.
     Updates session, and returns dict with user_id, word_state, guessed_letters, attempts_remaining, score"""
-    def get(self, input_str):
+    def get(self, input_str=None):
         if not self.user_id:
             return utils.create_json_return(session, "401 Unknown user")
-        if self.guessed_letters is None:
+        if input_str is None:
             return utils.create_json_return(session, "No guessed letters")
         if self.word_to_guess is None:
             return utils.create_json_return(session, "No word to guess")
@@ -146,7 +151,8 @@ class GuessLetter(Resource):
 
         session['attempts_remaining'] -= 1
         if session['attempts_remaining'] == 0:
-            utils.update_points(session)
+            points_to_add = utils.get_points_won(session['attempts_remaining'])
+            utils.update_points(session, points_to_add)
             return utils.create_json_return(session, "You didn't guess the word. The word was {}".format(self.word_to_guess))
 
         return utils.create_json_return(session, "'{}' is not in the word".format(input_letter))
@@ -187,7 +193,8 @@ class SaveHighScore(Resource):
         except:
             high_score_list = [('Andrew', 9001)]
 
-        high_score_list.append((self.user_id, self.score))
+        if self.user_id is not None:
+            high_score_list.append((self.user_id, self.score))
 
         high_score_list = sorted(high_score_list, key=itemgetter(1), reverse=True)[:10]
 
@@ -201,5 +208,5 @@ api.add_resource(HealthCheck, '/health_check')
 api.add_resource(CheckSession, '/check_session')
 api.add_resource(StartSession, '/start_session/<string:user_id>')
 api.add_resource(StartNewGame, '/start_new_game')
-api.add_resource(GuessLetter, '/guess_letter/<string:input_str>')
-api.add_resource(SaveHighScore, '/SaveHighScore')
+api.add_resource(GuessLetter, '/guess_letter', '/guess_letter/<string:input_str>' )
+api.add_resource(SaveHighScore, '/save_high_score')
