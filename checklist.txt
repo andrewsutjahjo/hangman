@@ -1,0 +1,81 @@
+Flask API
+
+Game itself:
+    start_session(self, username):
+        v if session exists:
+            - continue, save or reset?
+        v initialize session
+            return
+
+    start_game:
+        check session:
+        v read list of words (from word reader for extensibility)
+        v save as set of letters in session
+        v guessed letters
+        v return length of _
+
+    guess_letter:
+        v check session:
+        v check for ascii
+        v if letter !in set(guessed_letters)
+            if letter in set(word_to_guess)
+                return __ with filled in letters
+            else
+                decrement attempts_remaining
+                if attempts_remaining  == 0:
+                    Game over dude
+                    continue, save or reset?
+                return
+        v return '''You've already guessed this letter. I'd use your guess for another letter'''
+
+    save_highscore:
+        v get session
+        v save highscore (to file)
+        v reset session
+
+Client:
+    gets dict from API
+    print number of attempts remaining
+    print guessed letters in set
+    print _ with letters filled in.
+
+unittest:
+    v should start a session
+
+    v should start a game with a user_id
+
+    v should return a reponse
+    v should return '''Non ascii response'''
+    v should return  '''guess another letter''' if letter in set of words
+    v should update the session correctly
+        - when a letter is guessed correctly
+            - and update the word
+            - and update the guessed_letters
+            - and update the word state
+            - and not update the attempts remaining
+        - when a letter is guessed incorrectly
+            - and not update the word
+            - and update the guessed_letters
+            - and update the word state
+            - and update the attempts remaining
+
+    v should handle a loss correctly
+    v should handle a win correctly
+        - and add extra points when it's a complete guess
+    v should reset a session and save when a high score is saved
+
+State:
+    - use Flask session
+    dict: {
+    word_to_guess
+    word_state:
+    guessed_letters
+    attempts_remaining
+    user_id
+    score
+    }
+
+pluspoints?
+    - dockerize API and client
+    v if len(guess) == len(word_in_session) check if completely correct
+    v add username question at start: and save
